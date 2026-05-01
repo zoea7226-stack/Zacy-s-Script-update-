@@ -1,0 +1,161 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- UI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player:WaitForChild("PlayerGui")
+screenGui.Name = "ZacysScript"
+
+-- Open Button (Circle)
+local openBtn = Instance.new("TextButton")
+openBtn.Size = UDim2.new(0, 60, 0, 60)
+openBtn.Position = UDim2.new(0, 20, 0.5, -30)
+openBtn.Text = "Z"
+openBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+openBtn.TextColor3 = Color3.fromRGB(170, 0, 255)
+openBtn.Parent = screenGui
+
+local corner = Instance.new("UICorner", openBtn)
+corner.CornerRadius = UDim.new(1, 0)
+
+local stroke = Instance.new("UIStroke", openBtn)
+stroke.Color = Color3.fromRGB(170, 0, 255)
+stroke.Thickness = 2
+
+-- Frame
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 270, 0, 260)
+frame.Position = UDim2.new(0.5, -135, 0.5, -130)
+frame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+frame.Visible = false
+frame.Active = true
+frame.Draggable = true
+frame.Parent = screenGui
+
+Instance.new("UICorner", frame)
+
+local frameStroke = Instance.new("UIStroke", frame)
+frameStroke.Color = Color3.fromRGB(170, 0, 255)
+frameStroke.Thickness = 2
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Text = "Zacy's Script"
+title.Size = UDim2.new(1, 0, 0, 30)
+title.Position = UDim2.new(0, 0, 0, 0)
+title.BackgroundTransparency = 1
+title.TextColor3 = Color3.fromRGB(170, 0, 255)
+title.Font = Enum.Font.GothamBold
+title.TextScaled = true
+title.Parent = frame
+
+-- Textbox1 (Item Name)
+local tb1 = Instance.new("TextBox")
+tb1.PlaceholderText = "Item Name (Food/Weapon)"
+tb1.Size = UDim2.new(0.9, 0, 0, 30)
+tb1.Position = UDim2.new(0.05, 0, 0.15, 0)
+tb1.BackgroundColor3 = Color3.fromRGB(20,20,20)
+tb1.TextColor3 = Color3.new(1,1,1)
+tb1.Parent = frame
+
+Instance.new("UICorner", tb1)
+
+-- Textbox2 (Amount - FOOD ONLY)
+local tb2 = Instance.new("TextBox")
+tb2.PlaceholderText = "Amount (Food only)"
+tb2.Size = UDim2.new(0.9, 0, 0, 30)
+tb2.Position = UDim2.new(0.05, 0, 0.3, 0)
+tb2.BackgroundColor3 = Color3.fromRGB(20,20,20)
+tb2.TextColor3 = Color3.new(1,1,1)
+tb2.Parent = frame
+
+Instance.new("UICorner", tb2)
+
+-- Get Amount
+local function getAmount()
+	local num = tonumber(tb2.Text)
+	if num and num > 0 then
+		return math.floor(num)
+	end
+	return 1
+end
+
+-- Button style function
+local function styleButton(btn)
+	btn.BackgroundColor3 = Color3.fromRGB(20,20,20)
+	btn.TextColor3 = Color3.fromRGB(170,0,255)
+	btn.Font = Enum.Font.GothamBold
+	btn.TextScaled = true
+	
+	Instance.new("UICorner", btn)
+	
+	local s = Instance.new("UIStroke", btn)
+	s.Color = Color3.fromRGB(170,0,255)
+	s.Thickness = 1.5
+end
+
+-- Give Food
+local foodBtn = Instance.new("TextButton")
+foodBtn.Text = "Give Food"
+foodBtn.Size = UDim2.new(0.9, 0, 0, 30)
+foodBtn.Position = UDim2.new(0.05, 0, 0.5, 0)
+foodBtn.Parent = frame
+styleButton(foodBtn)
+
+foodBtn.MouseButton1Click:Connect(function()
+	local item = tb1.Text ~= "" and tb1.Text or "Apple"
+	local amount = getAmount()
+
+	for i = 1, amount do
+		local args = {item}
+		ReplicatedStorage:WaitForChild("Events"):WaitForChild("GiveTool"):FireServer(unpack(args))
+	end
+end)
+
+-- Give Weapon (uses textbox)
+local weaponBtn = Instance.new("TextButton")
+weaponBtn.Text = "Give Weapon"
+weaponBtn.Size = UDim2.new(0.9, 0, 0, 30)
+weaponBtn.Position = UDim2.new(0.05, 0, 0.65, 0)
+weaponBtn.Parent = frame
+styleButton(weaponBtn)
+
+weaponBtn.MouseButton1Click:Connect(function()
+	local item = tb1.Text ~= "" and tb1.Text or "Crowbar3"
+
+	local args = {
+		3,
+		item,
+		"Weapons",
+		player.Name,
+		[6] = 1
+	}
+
+	ReplicatedStorage:WaitForChild("Events"):WaitForChild("Vending"):FireServer(unpack(args))
+end)
+
+-- Give Armor (FIXED - NO TEXTBOX)
+local armorBtn = Instance.new("TextButton")
+armorBtn.Text = "Give Armor"
+armorBtn.Size = UDim2.new(0.9, 0, 0, 30)
+armorBtn.Position = UDim2.new(0.05, 0, 0.8, 0)
+armorBtn.Parent = frame
+styleButton(armorBtn)
+
+armorBtn.MouseButton1Click:Connect(function()
+	local args = {
+		3,
+		"Armor2", -- ALWAYS THIS
+		"Armor",
+		player.Name,
+		[6] = 3
+	}
+
+	ReplicatedStorage:WaitForChild("Events"):WaitForChild("Vending"):FireServer(unpack(args))
+end)
+
+-- Toggle UI
+openBtn.MouseButton1Click:Connect(function()
+	frame.Visible = not frame.Visible
+end)
